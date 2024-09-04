@@ -71,9 +71,15 @@ function App() {
     if (index === impostorIndex) {
       clearInterval(intervalId);
       setGameOver(true);
+      
+      const restartConfirmed = window.confirm('Do you want to restart the game?');
+      if (restartConfirmed) {
+        // Assuming you want to reload the app without a full page refresh.
+        window.location.reload();
+      }
     }
   };
-
+  
   const renderGrid = () => {
     const grid = [];
     const totalCells = width * height;
@@ -98,6 +104,7 @@ function App() {
 
   return (
     <div className="App">
+      <h1>Game Smiley</h1>
       <input
         ref={cloneInputRef}
         type="text"
