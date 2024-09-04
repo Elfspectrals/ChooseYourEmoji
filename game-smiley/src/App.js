@@ -9,40 +9,48 @@ function App() {
   const [gridVisible, setGridVisible] = useState(false);
   const [width] = useState(10); // Fixed width for 10x10 grid
   const [height] = useState(10); // Fixed height for 10x10 grid
+  const [timer, setTimer] = useState(0);
+  const [intervalId, setIntervalId] = useState(null);
+  const [gameOver, setGameOver] = useState(false);
+  
+  // Separate refs for each input
   const cloneInputRef = useRef(null);
   const impostorInputRef = useRef(null);
-  const pickerRef = useRef(null);
-  const [currentPicker, setCurrentPicker] = useState(null);
+  
+  // Separate pickers for each input
+  const clonePickerRef = useRef(null);
+  const impostorPickerRef = useRef(null);
 
   useEffect(() => {
-    const picker = new EmojiButton();
-    pickerRef.current = picker;
+    // Initialize pickers independently
+    const clonePicker = new EmojiButton();
+    const impostorPicker = new EmojiButton();
 
-    picker.on('emoji', selection => {
+    clonePickerRef.current = clonePicker;
+    impostorPickerRef.current = impostorPicker;
+
+    clonePicker.on('emoji', selection => {
       const { emoji } = selection;
-
-      if (currentPicker === 'clone') {
-        if (cloneInputRef.current) {
-          cloneInputRef.current.value = emoji;
-          setCloneEmoji(emoji);
-        }
-      } else if (currentPicker === 'impostor') {
-        if (impostorInputRef.current) {
-          impostorInputRef.current.value = emoji;
-          setImpostorEmoji(emoji);
-        }
+      if (cloneInputRef.current) {
+        cloneInputRef.current.value = emoji;
+        setCloneEmoji(emoji);
       }
     });
-  }, [currentPicker]);
+
+    impostorPicker.on('emoji', selection => {
+      const { emoji } = selection;
+      if (impostorInputRef.current) {
+        impostorInputRef.current.value = emoji;
+        setImpostorEmoji(emoji);
+      }
+    });
+  }, []);
 
   const handleButtonClick = (pickerType) => {
-    setCurrentPicker(pickerType);
-    if (pickerRef.current) {
-      if (pickerType === 'clone' && cloneInputRef.current) {
-        pickerRef.current.togglePicker(cloneInputRef.current);
-      } else if (pickerType === 'impostor' && impostorInputRef.current) {
-        pickerRef.current.togglePicker(impostorInputRef.current);
-      }
+    if (pickerType === 'clone' && cloneInputRef.current && clonePickerRef.current) {
+      clonePickerRef.current.togglePicker(cloneInputRef.current);
+    } else if (pickerType === 'impostor' && impostorInputRef.current && impostorPickerRef.current) {
+      impostorPickerRef.current.togglePicker(impostorInputRef.current);
     }
   };
 
@@ -50,6 +58,20 @@ function App() {
     const totalCells = width * height;
     setImpostorIndex(Math.floor(Math.random() * totalCells));
     setGridVisible(true);
+    setGameOver(false);
+    setTimer(0);
+
+    const id = setInterval(() => {
+      setTimer(prevTime => prevTime + 1);
+    }, 1000);
+    setIntervalId(id);
+  };
+
+  const handleCellClick = (index) => {
+    if (index === impostorIndex) {
+      clearInterval(intervalId);
+      setGameOver(true);
+    }
   };
 
   const renderGrid = () => {
@@ -63,7 +85,9 @@ function App() {
           style={{
             width: '22px',
             height: '22px',
+            cursor: 'pointer',
           }}
+          onClick={() => handleCellClick(i)}
         >
           {i === impostorIndex ? impostorEmoji : cloneEmoji}
         </div>
@@ -90,14 +114,20 @@ function App() {
         Start
       </button>
       {gridVisible && (
-        <div
-          className="grid-container"
-          style={{
-            gridTemplateColumns: `repeat(${width}, 22px)`,
-          }}
-        >
-          {renderGrid()}
-        </div>
+        <>
+          <div className="timer">
+            Time: {timer}s
+          </div>
+          <div
+            className="grid-container"
+            style={{
+              gridTemplateColumns: `repeat(${width}, 22px)`,
+            }}
+          >
+            {renderGrid()}
+          </div>
+          {gameOver && <div className="game-over">You found the impostor in {timer} seconds!</div>}
+        </>
       )}
     </div>
   );

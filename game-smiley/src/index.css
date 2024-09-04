@@ -71,3 +71,30 @@ button:disabled {
   display: grid;
   gap: 2px; /* Small gap between grid items */
 }
+
+.timer {
+  font-size: 24px;
+  margin-top: 10px;
+  color: #333;
+}
+
+.grid-container {
+  display: grid;
+  gap: 1px;
+  margin-top: 20px;
+}
+
+.grid-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f0f0f0;
+  border: 1px solid #ccc;
+  font-size: 18px;
+}
+
+.game-over {
+  margin-top: 5px;
+  font-size: 12px;
+  color: green;
+}
